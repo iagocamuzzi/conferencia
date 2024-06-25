@@ -219,7 +219,7 @@
             const quantityCell = row.insertCell(2);
             const countCell = row.insertCell(3);
 
-            codeCell.textContent = product.getElementsByTagName('cProd')[0].textContent; // Alterar conforme a estrutura do XML
+            codeCell.textContent = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
             nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
             quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
 
@@ -248,6 +248,10 @@
             // Adiciona classe de erro se necessário
             row.classList.add('product-row');
         });
+    }
+
+    function removeLeadingZeros(str) {
+        return str.replace(/^0+/, '');
     }
 
     function changeCount(input, increment) {
