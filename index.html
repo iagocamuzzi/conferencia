@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recebimento de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .file-input {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .file-input input {
+            display: none;
+        }
+        .file-input label,
+        .file-input button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .file-input button {
+            background-color: #28a745;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .count-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .count-container input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .count-container button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .error {
+            background-color: #f8d7da !important;
+        }
+        .success {
+            background-color: #d4edda;
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .center {
+            text-align: center;
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            th, td {
+                padding: 8px;
+            }
+            .file-input label,
+            .file-input button,
+            .count-container button {
+                padding: 8px 16px;
+                margin: 3px;
+            }
+            .count-container input {
+                width: 40px;
+            }
+            .submit-btn {
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 6px;
+            }
+            .file-input label,
+            .file-input button,
+            .count-container button {
+                padding: 6px 12px;
+                margin: 2px;
+            }
+            .count-container input {
+                width: 30px;
+            }
+            .submit-btn {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Recebimento de Produtos</h1>
+    <div class="file-input">
+        <input type="file" id="xmlFile" accept=".xml">
+        <label for="xmlFile">Selecionar XML</label>
+        <button onclick="loadXML()">Carregar XML</button>
+    </div>
+    <table id="productsTable">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th class="center">Quantidade de Caixas</th>
+                <th class="center">Contagem</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os dados dos produtos serão inseridos aqui via JavaScript -->
+        </tbody>
+    </table>
+    <button class="submit-btn" onclick="submitConfirmation()">Confirmar Recebimento</button>
+</div>
+
+<script>
+    function loadXML() {
+        const fileInput = document.getElementById('xmlFile');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Por favor, selecione um arquivo XML primeiro.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
+            parseXML(xmlDoc);
+        };
+        reader.readAsText(file);
+    }
+
+    function parseXML(xmlDoc) {
+        const products = xmlDoc.getElementsByTagName('prod'); // Alterar conforme a estrutura do XML
+
+        const tableBody = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+
+        Array.from(products).forEach(product => {
+            const row = tableBody.insertRow();
+
+            const nameCell = row.insertCell(0);
+            const quantityCell = row.insertCell(1);
+            const countCell = row.insertCell(2);
+
+            nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
+            quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
+
+            const countContainer = document.createElement('div');
+            countContainer.classList.add('count-container');
+
+            const minusButton = document.createElement('button');
+            minusButton.textContent = '-';
+            minusButton.onclick = () => changeCount(countInput, -1);
+
+            const countInput = document.createElement('input');
+            countInput.type = 'number';
+            countInput.min = '0';
+            countInput.value = '0';
+            countInput.readOnly = true;
+
+            const plusButton = document.createElement('button');
+            plusButton.textContent = '+';
+            plusButton.onclick = () => changeCount(countInput, 1);
+
+            countContainer.appendChild(minusButton);
+            countContainer.appendChild(countInput);
+            countContainer.appendChild(plusButton);
+            countCell.appendChild(countContainer);
+
+            // Adiciona classe de erro se necessário
+            row.classList.add('product-row');
+        });
+    }
+
+    function changeCount(input, increment) {
+        let currentValue = parseInt(input.value);
+        currentValue += increment;
+        if (currentValue < 0) currentValue = 0;
+        input.value = currentValue;
+    }
+
+    function submitConfirmation() {
+        const rows = document.querySelectorAll('.product-row');
+        let allCorrect = true;
+
+        rows.forEach(row => {
+            const quantity = parseInt(row.cells[1].textContent);
+            const count = parseInt(row.cells[2].querySelector('input').value);
+
+            if (quantity !== count) {
+                row.classList.add('error');
+                row.classList.remove('success');
+                allCorrect = false;
+            } else {
+                row.classList.add('success');
+                row.classList.remove('error');
+            }
+        });
+
+        if (allCorrect) {
+            alert('Todos os produtos foram confirmados com a quantidade correta.');
+        } else {
+            alert('Existem produtos com quantidades incorretas. Por favor, verifique.');
+        }
+    }
+</script>
+
+</body>
+</html>
