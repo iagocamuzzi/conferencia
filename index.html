@@ -174,8 +174,9 @@
     <table id="productsTable">
         <thead>
             <tr>
+                <th>Código</th>
                 <th>Produto</th>
-                <th class="center">Quantidade de Caixas</th>
+                <th class="center">Caixas</th>
                 <th class="center">Contagem</th>
             </tr>
         </thead>
@@ -213,10 +214,12 @@
         Array.from(products).forEach(product => {
             const row = tableBody.insertRow();
 
-            const nameCell = row.insertCell(0);
-            const quantityCell = row.insertCell(1);
-            const countCell = row.insertCell(2);
+            const codeCell = row.insertCell(0);
+            const nameCell = row.insertCell(1);
+            const quantityCell = row.insertCell(2);
+            const countCell = row.insertCell(3);
 
+            codeCell.textContent = product.getElementsByTagName('cProd')[0].textContent; // Alterar conforme a estrutura do XML
             nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
             quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
 
@@ -259,8 +262,8 @@
         let allCorrect = true;
 
         rows.forEach(row => {
-            const quantity = parseInt(row.cells[1].textContent);
-            const count = parseInt(row.cells[2].querySelector('input').value);
+            const quantity = parseInt(row.cells[2].textContent);
+            const count = parseInt(row.cells[3].querySelector('input').value);
 
             if (quantity !== count) {
                 row.classList.add('error');
