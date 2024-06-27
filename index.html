@@ -205,147 +205,154 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <script>
-    function loadXML() {
-        const fileInput = document.getElementById('xmlFile');
-        const file = fileInput.files[0];
-        if (!file) {
-            alert("Por favor, selecione um arquivo XML primeiro.");
-            return;
+    document.addEventListener("DOMContentLoaded", function() {
+        function loadXML() {
+            const fileInput = document.getElementById('xmlFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Por favor, selecione um arquivo XML primeiro.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
+                parseXML(xmlDoc);
+            };
+            reader.readAsText(file);
         }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
-            parseXML(xmlDoc);
-        };
-        reader.readAsText(file);
-    }
+        function parseXML(xmlDoc) {
+            const products = xmlDoc.getElementsByTagName('prod'); // Alterar conforme a estrutura do XML
 
-    function parseXML(xmlDoc) {
-        const products = xmlDoc.getElementsByTagName('prod'); // Alterar conforme a estrutura do XML
+            const tableBody = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
 
-        const tableBody = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
-        tableBody.innerHTML = '';
+            Array.from(products).forEach(product => {
+                const row = tableBody.insertRow();
 
-        Array.from(products).forEach(product => {
-            const row = tableBody.insertRow();
+                const codeCell = row.insertCell(0);
+                const nameCell = row.insertCell(1);
+                const quantityCell = row.insertCell(2);
+                const countCell = row.insertCell(3);
 
-            const codeCell = row.insertCell(0);
-            const nameCell = row.insertCell(1);
-            const quantityCell = row.insertCell(2);
-            const countCell = row.insertCell(3);
+                codeCell.textContent = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
+                nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
+                quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
 
-            codeCell.textContent = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
-            nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
-            quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
+                const countContainer = document.createElement('div');
+                countContainer.classList.add('count-container');
 
-            const countContainer = document.createElement('div');
-            countContainer.classList.add('count-container');
+                const minusButton = document.createElement('button');
+                minusButton.textContent = '-';
+                minusButton.onclick = () => changeCount(countInput, -1);
 
-            const minusButton = document.createElement('button');
-            minusButton.textContent = '-';
-            minusButton.onclick = () => changeCount(countInput, -1);
+                const countInput = document.createElement('input');
+                countInput.type = 'number';
+                countInput.min = '0';
+                countInput.value = '0';
+                countInput.readOnly = true;
 
-            const countInput = document.createElement('input');
-            countInput.type = 'number';
-            countInput.min = '0';
-            countInput.value = '0';
-            countInput.readOnly = true;
+                const plusButton = document.createElement('button');
+                plusButton.textContent = '+';
+                plusButton.onclick = () => changeCount(countInput, 1);
 
-            const plusButton = document.createElement('button');
-            plusButton.textContent = '+';
-            plusButton.onclick = () => changeCount(countInput, 1);
+                countContainer.appendChild(minusButton);
+                countContainer.appendChild(countInput);
+                countContainer.appendChild(plusButton);
+                countCell.appendChild(countContainer);
 
-            countContainer.appendChild(minusButton);
-            countContainer.appendChild(countInput);
-            countContainer.appendChild(plusButton);
-            countCell.appendChild(countContainer);
+                // Adiciona classe de erro se necessário
+                row.classList.add('product-row');
+            });
+        }
 
-            // Adiciona classe de erro se necessário
-            row.classList.add('product-row');
-        });
-    }
+        function removeLeadingZeros(str) {
+            return str.replace(/^0+/, '');
+        }
 
-    function removeLeadingZeros(str) {
-        return str.replace(/^0+/, '');
-    }
+        function changeCount(input, increment) {
+            let currentValue = parseInt(input.value);
+            currentValue += increment;
+            if (currentValue < 0) currentValue = 0;
+            input.value = currentValue;
+        }
 
-    function changeCount(input, increment) {
-        let currentValue = parseInt(input.value);
-        currentValue += increment;
-        if (currentValue < 0) currentValue = 0;
-        input.value = currentValue;
-    }
+        function submitConfirmation() {
+            const rows = document.querySelectorAll('.product-row');
+            let allCorrect = true;
 
-    function submitConfirmation() {
-        const rows = document.querySelectorAll('.product-row');
-        let allCorrect = true;
+            rows.forEach(row => {
+                const quantity = parseInt(row.cells[2].textContent);
+                const count = parseInt(row.cells[3].querySelector('input').value);
 
-        rows.forEach(row => {
-            const quantity = parseInt(row.cells[2].textContent);
-            const count = parseInt(row.cells[3].querySelector('input').value);
+                if (quantity !== count) {
+                    row.classList.add('error');
+                    row.classList.remove('success');
+                    allCorrect = false;
+                } else {
+                    row.classList.add('success');
+                    row.classList.remove('error');
+                }
+            });
 
-            if (quantity !== count) {
-                row.classList.add('error');
-                row.classList.remove('success');
-                allCorrect = false;
+            if (allCorrect) {
+                alert('Todos os produtos foram confirmados com a quantidade correta.');
             } else {
-                row.classList.add('success');
-                row.classList.remove('error');
+                alert('Existem produtos com quantidades incorretas. Por favor, verifique.');
             }
-        });
-
-        if (allCorrect) {
-            alert('Todos os produtos foram confirmados com a quantidade correta.');
-        } else {
-            alert('Existem produtos com quantidades incorretas. Por favor, verifique.');
         }
-    }
 
-    function startScanner() {
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#interactive')    // Or '#yourElement' (optional)
-            },
-            decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
-            }
-        }, function (err) {
-            if (err) {
-                console.log(err);
-                return
-            }
-            console.log("Initialization finished. Ready to start");
-            Quagga.start();
-        });
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#interactive')    // Or '#yourElement' (optional)
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                }
+            }, function (err) {
+                if (err) {
+                    console.log(err);
+                    return
+                }
+                console.log("Initialization finished. Ready to start");
+                Quagga.start();
+            });
 
-        Quagga.onDetected(function(data) {
-            const code = data.codeResult.code;
-            console.log("Code detected: " + code);
-            updateCountForCode(code);
-        });
-    }
-
-    function updateCountForCode(code) {
-        const rows = document.querySelectorAll('.product-row');
-        let codeFound = false;
-
-        rows.forEach(row => {
-            const cellCode = row.cells[0].textContent;
-            if (cellCode === removeLeadingZeros(code)) {
-                const countInput = row.cells[3].querySelector('input');
-                changeCount(countInput, 1);
-                codeFound = true;
-            }
-        });
-
-        if (!codeFound) {
-            alert("Código não encontrado na lista de produtos.");
+            Quagga.onDetected(function(data) {
+                const code = data.codeResult.code;
+                console.log("Code detected: " + code);
+                updateCountForCode(code);
+            });
         }
-    }
+
+        function updateCountForCode(code) {
+            const rows = document.querySelectorAll('.product-row');
+            let codeFound = false;
+
+            rows.forEach(row => {
+                const cellCode = row.cells[0].textContent;
+                if (cellCode === removeLeadingZeros(code)) {
+                    const countInput = row.cells[3].querySelector('input');
+                    changeCount(countInput, 1);
+                    codeFound = true;
+                }
+            });
+
+            if (!codeFound) {
+                alert("Código não encontrado na lista de produtos.");
+            }
+        }
+
+        // Attach functions to window object to make them accessible in HTML
+        window.loadXML = loadXML;
+        window.startScanner = startScanner;
+        window.submitConfirmation = submitConfirmation;
+    });
 </script>
 
 </body>
