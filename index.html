@@ -34,8 +34,7 @@
             display: none;
         }
         .file-input label,
-        .file-input button,
-        .scan-btn {
+        .file-input button {
             padding: 15px 25px;
             margin: 5px;
             background-color: #007bff;
@@ -51,14 +50,17 @@
         .file-input button {
             background-color: #28a745;
         }
-        .scan-btn {
-            background-color: #ffc107;
+        .scanner-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        #reader {
+        #interactive {
             width: 100%;
-            max-width: 600px;
-            margin: auto;
-            display: none;
+            max-width: 300px;
+            height: auto;
+            margin-top: 20px;
         }
         table {
             width: 100%;
@@ -134,7 +136,6 @@
             }
             .file-input label,
             .file-input button,
-            .scan-btn,
             .count-container button {
                 padding: 10px 15px;
                 margin: 3px;
@@ -157,7 +158,6 @@
             }
             .file-input label,
             .file-input button,
-            .scan-btn,
             .count-container button {
                 padding: 8px 10px;
                 margin: 2px;
@@ -173,7 +173,6 @@
             }
         }
     </style>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -184,8 +183,10 @@
         <label for="xmlFile">Selecionar XML</label>
         <button onclick="loadXML()">Carregar XML</button>
     </div>
-    <button class="scan-btn" onclick="startScanner()">Escanear Código de Barras</button>
-    <div id="reader"></div>
+    <div class="scanner-container">
+        <button onclick="startScanner()">Escanear Código</button>
+        <div id="interactive" class="viewport"></div>
+    </div>
     <table id="productsTable">
         <thead>
             <tr>
@@ -202,9 +203,8 @@
     <button class="submit-btn" onclick="submitConfirmation()">Confirmar Recebimento</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <script>
-    let productCodes = [];
-
     function loadXML() {
         const fileInput = document.getElementById('xmlFile');
         const file = fileInput.files[0];
@@ -228,8 +228,6 @@
         const tableBody = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
         tableBody.innerHTML = '';
 
-        productCodes = []; // Reset product codes
-
         Array.from(products).forEach(product => {
             const row = tableBody.insertRow();
 
@@ -238,9 +236,7 @@
             const quantityCell = row.insertCell(2);
             const countCell = row.insertCell(3);
 
-            const code = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
-            codeCell.textContent = code;
-            productCodes.push(code);
+            codeCell.textContent = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
             nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
             quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
 
@@ -271,4 +267,86 @@
         });
     }
 
-    function
+    function removeLeadingZeros(str) {
+        return str.replace(/^0+/, '');
+    }
+
+    function changeCount(input, increment) {
+        let currentValue = parseInt(input.value);
+        currentValue += increment;
+        if (currentValue < 0) currentValue = 0;
+        input.value = currentValue;
+    }
+
+    function submitConfirmation() {
+        const rows = document.querySelectorAll('.product-row');
+        let allCorrect = true;
+
+        rows.forEach(row => {
+            const quantity = parseInt(row.cells[2].textContent);
+            const count = parseInt(row.cells[3].querySelector('input').value);
+
+            if (quantity !== count) {
+                row.classList.add('error');
+                row.classList.remove('success');
+                allCorrect = false;
+            } else {
+                row.classList.add('success');
+                row.classList.remove('error');
+            }
+        });
+
+        if (allCorrect) {
+            alert('Todos os produtos foram confirmados com a quantidade correta.');
+        } else {
+            alert('Existem produtos com quantidades incorretas. Por favor, verifique.');
+        }
+    }
+
+    function startScanner() {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#interactive')    // Or '#yourElement' (optional)
+            },
+            decoder: {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+            }
+        }, function (err) {
+            if (err) {
+                console.log(err);
+                return
+            }
+            console.log("Initialization finished. Ready to start");
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function(data) {
+            const code = data.codeResult.code;
+            console.log("Code detected: " + code);
+            updateCountForCode(code);
+        });
+    }
+
+    function updateCountForCode(code) {
+        const rows = document.querySelectorAll('.product-row');
+        let codeFound = false;
+
+        rows.forEach(row => {
+            const cellCode = row.cells[0].textContent;
+            if (cellCode === removeLeadingZeros(code)) {
+                const countInput = row.cells[3].querySelector('input');
+                changeCount(countInput, 1);
+                codeFound = true;
+            }
+        });
+
+        if (!codeFound) {
+            alert("Código não encontrado na lista de produtos.");
+        }
+    }
+</script>
+
+</body>
+</html>
