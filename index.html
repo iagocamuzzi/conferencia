@@ -59,8 +59,8 @@
         #interactive {
             position: relative;
             width: 100%;
-            max-width: 500px;
-            height: 150px;
+            max-width: 100%;
+            height: 300px;
             margin-top: 20px;
             overflow: hidden;
         }
@@ -344,8 +344,8 @@
                     type: "LiveStream",
                     target: document.querySelector('#interactive'),    // Or '#yourElement' (optional)
                     constraints: {
-                        width: 500,
-                        height: 150,
+                        width: window.innerWidth,
+                        height: 300,
                         facingMode: "environment"
                     }
                 },
