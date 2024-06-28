@@ -59,13 +59,18 @@
         #interactive {
             position: relative;
             width: 100%;
-            max-width: 300px;
-            height: auto;
+            max-width: 500px;
+            height: 150px;
             margin-top: 20px;
+            overflow: hidden;
         }
         #interactive video {
-            width: 100%;
-            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: 100%;
+            transform: translate(-50%, -50%);
         }
         .overlay {
             position: absolute;
@@ -84,6 +89,7 @@
             height: 2px;
             background-color: red;
             pointer-events: none;
+            transform: translateY(-50%);
         }
         table {
             width: 100%;
@@ -336,15 +342,25 @@
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
-                    target: document.querySelector('#interactive')    // Or '#yourElement' (optional)
+                    target: document.querySelector('#interactive'),    // Or '#yourElement' (optional)
+                    constraints: {
+                        width: 500,
+                        height: 150,
+                        facingMode: "environment"
+                    }
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
                 },
                 decoder: {
                     readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
-                }
+                },
+                locate: true
             }, function (err) {
                 if (err) {
                     console.log(err);
-                    return
+                    return;
                 }
                 console.log("Initialization finished. Ready to start");
                 Quagga.start();
