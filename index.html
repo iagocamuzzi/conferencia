@@ -372,7 +372,7 @@
 
         function playBeep() {
             const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-            audio.play();
+            audio.play().catch(error => console.log('Erro ao tocar o som:', error));
         }
 
         function startScanner() {
@@ -407,7 +407,6 @@
                 if (code !== lastScannedCode) {
                     log("Código detectado: " + code);
                     updateCountForCode(code);
-                    playBeep();
                     lastScannedCode = code;
                 }
             });
@@ -424,12 +423,14 @@
                 if (cellCode === code) {
                     const countInput = row.cells[3].querySelector('input');
                     changeCount(countInput, 1);
+                    playBeep();
                     codeFound = true;
                 }
             });
 
             if (!codeFound) {
                 log("Código não encontrado na lista de produtos.");
+                alert("Código não pertence à nota fiscal.");
             }
         }
 
