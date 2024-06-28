@@ -277,7 +277,8 @@
                 const quantityCell = row.insertCell(2);
                 const countCell = row.insertCell(3);
 
-                codeCell.textContent = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
+                const productCode = removeLeadingZeros(product.getElementsByTagName('cProd')[0].textContent); // Alterar conforme a estrutura do XML
+                codeCell.textContent = productCode;
                 nameCell.textContent = product.getElementsByTagName('xProd')[0].textContent; // Alterar conforme a estrutura do XML
                 quantityCell.textContent = product.getElementsByTagName('qCom')[0].textContent; // Alterar conforme a estrutura do XML
 
@@ -375,7 +376,7 @@
 
             Quagga.onDetected(function(data) {
                 const code = data.codeResult.code;
-                console.log("Code detected: " + code);
+                console.log("Código detectado: " + code);
                 updateCountForCode(code);
             });
         }
@@ -384,8 +385,10 @@
             const rows = document.querySelectorAll('.product-row');
             let codeFound = false;
 
+            console.log("Buscando código: " + code);
             rows.forEach(row => {
                 const cellCode = row.cells[0].textContent.trim();
+                console.log("Comparando com: " + cellCode);
                 if (cellCode === code) {
                     const countInput = row.cells[3].querySelector('input');
                     changeCount(countInput, 1);
