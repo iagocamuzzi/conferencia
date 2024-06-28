@@ -159,6 +159,20 @@
         .center {
             text-align: center;
         }
+        .log-container {
+            max-width: 800px;
+            margin: auto;
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .log {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
 
         /* Media Queries */
         @media (max-width: 768px) {
@@ -242,10 +256,19 @@
     </table>
     <button class="submit-btn" onclick="submitConfirmation()">Confirmar Recebimento</button>
 </div>
+<div class="log-container">
+    <h2>Logs</h2>
+    <div id="log" class="log"></div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        function log(message) {
+            const logElement = document.getElementById('log');
+            logElement.textContent += message + '\n';
+        }
+
         function loadXML() {
             const fileInput = document.getElementById('xmlFile');
             const file = fileInput.files[0];
@@ -352,8 +375,6 @@
                     type: "LiveStream",
                     target: document.querySelector('#interactive'),    // Or '#yourElement' (optional)
                     constraints: {
-                        width: 640,
-                        height: 480,
                         facingMode: "environment"
                     }
                 },
@@ -376,7 +397,7 @@
 
             Quagga.onDetected(function(data) {
                 const code = data.codeResult.code;
-                console.log("Código detectado: " + code);
+                log("Código detectado: " + code);
                 updateCountForCode(code);
             });
         }
@@ -385,10 +406,10 @@
             const rows = document.querySelectorAll('.product-row');
             let codeFound = false;
 
-            console.log("Buscando código: " + code);
+            log("Buscando código: " + code);
             rows.forEach(row => {
                 const cellCode = row.cells[0].textContent.trim();
-                console.log("Comparando com: " + cellCode);
+                log("Comparando com: " + cellCode);
                 if (cellCode === code) {
                     const countInput = row.cells[3].querySelector('input');
                     changeCount(countInput, 1);
@@ -397,7 +418,7 @@
             });
 
             if (!codeFound) {
-                alert("Código não encontrado na lista de produtos.");
+                log("Código não encontrado na lista de produtos.");
             }
         }
 
