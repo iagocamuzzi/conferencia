@@ -264,6 +264,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        let lastScannedCode = null;
+
         function log(message) {
             const logElement = document.getElementById('log');
             logElement.textContent += message + '\n';
@@ -368,6 +370,11 @@
             }
         }
 
+        function playBeep() {
+            const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+            audio.play();
+        }
+
         function startScanner() {
             Quagga.init({
                 inputStream: {
@@ -397,8 +404,12 @@
 
             Quagga.onDetected(function(data) {
                 const code = data.codeResult.code;
-                log("Código detectado: " + code);
-                updateCountForCode(code);
+                if (code !== lastScannedCode) {
+                    log("Código detectado: " + code);
+                    updateCountForCode(code);
+                    playBeep();
+                    lastScannedCode = code;
+                }
             });
         }
 
