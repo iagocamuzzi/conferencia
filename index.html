@@ -384,7 +384,7 @@
 
             rows.forEach(row => {
                 const cellCode = row.cells[0].textContent.trim();
-                if (cellCode === removeLeadingZeros(code)) {
+                if (cellCode === code) {
                     const countInput = row.cells[3].querySelector('input');
                     changeCount(countInput, 1);
                     codeFound = true;
