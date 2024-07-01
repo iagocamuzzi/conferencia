@@ -265,6 +265,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         let lastScannedCode = null;
+        const beepSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
 
         function log(message) {
             const logElement = document.getElementById('log');
@@ -371,8 +372,7 @@
         }
 
         function playBeep() {
-            const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-            audio.play().catch(error => console.log('Erro ao tocar o som:', error));
+            beepSound.play().catch(error => console.log('Erro ao tocar o som:', error));
         }
 
         function startScanner() {
@@ -435,9 +435,7 @@
             if (!codeFound) {
                 log("Código não encontrado na lista de produtos.");
                 playBeep(); // Play beep for error
-                setTimeout(() => {
-                    alert("Código não pertence à nota fiscal.");
-                }, 100);
+                alert("Código não pertence à nota fiscal.");
             }
         }
 
