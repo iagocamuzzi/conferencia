@@ -434,7 +434,10 @@
 
             if (!codeFound) {
                 log("Código não encontrado na lista de produtos.");
-                alert("Código não pertence à nota fiscal.");
+                playBeep(); // Play beep for error
+                setTimeout(() => {
+                    alert("Código não pertence à nota fiscal.");
+                }, 100);
             }
         }
 
